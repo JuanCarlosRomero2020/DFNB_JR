@@ -7,6 +7,11 @@ MODIFICATION LOG:
 Ver      Date        Author        Description
 -----   ----------   -----------   -------------------------------------------------------------------------------
 1.0     08/02/2019   JCRomero       1. Built this table for LDS BC IT240
+2.0     06/29/2021   JCRomero       1. Added Age Column
+3.0     06/29/2021   JCRomero       1. Added Latitud Column
+4.0     06/29/2021   JCRomero       1. Added Longitud Column
+5.0     06/29/2021   JCRomero       1. Added product code
+6.0     06/29/2021   JCRomero       1. Added product description
 
 
 RUNTIME: 
@@ -28,7 +33,9 @@ SELECT a.acct_id,
        a.open_close_code, 
        a.loan_amt, 
        b.branch_id, 
-       b.branch_desc, 
+       b.branch_desc,
+	   b.latitud,
+	   b.longitud,
        c.cust_id, 
        c.last_name, 
        c.cust_since_date
@@ -72,9 +79,9 @@ SELECT tad.acct_id,
        YEAR(tcd.cust_since_date) AS cust_since_year, 
        tcd.cust_rel_id AS pri_cust_rel_id, 
        tad.prod_id, 
-       --     tpd.prod_code, 
+       tpd.prod_code, 
        tpd.prod_desc, 
-       --       tpd.prod_code + ' - ' + tpd.prod_desc AS prod, 
+       tpd.prod_code + ' - ' + tpd.prod_desc AS prod, 
        tad.branch_id, 
        tbd.branch_code, 
        tbd.branch_desc, 
@@ -98,9 +105,9 @@ GROUP BY tad.acct_id,
          YEAR(tcd.cust_since_date), 
          tcd.cust_rel_id, 
          tad.prod_id, 
-         --      tpd.prod_code, 
+         tpd.prod_code, 
          tpd.prod_desc, 
-         --    tpd.prod_code + ' - ' + tpd.prod_desc, 
+         tpd.prod_code + ' - ' + tpd.prod_desc, 
          tad.branch_id, 
          tbd.branch_code, 
          tbd.branch_desc, 
