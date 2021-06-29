@@ -45,7 +45,9 @@ distributed under the same license terms.
 
 ******************************************************************************************************************/
      SELECT b.branch_id, 
-            b.branch_desc, 
+            b.branch_desc,
+			b.latitud,
+	        b.longitud,
             YEAR(a.open_date) AS year, 
             MONTH(a.open_date) AS month, 
             SUM(a.loan_amt) AS total,
@@ -58,6 +60,8 @@ distributed under the same license terms.
      WHERE YEAR(a.open_date) BETWEEN 2016 AND 2019
      GROUP BY  b.branch_id,
 	           b.branch_desc,
+			   b.latitud,
+	           b.longitud,
 			   a.open_date,
 			   a.loan_amt,
 			   c.cust_id;

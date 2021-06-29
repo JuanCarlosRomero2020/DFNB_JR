@@ -112,7 +112,9 @@ GROUP BY tad.acct_id,
 --4) Loan sum
 
 SELECT b.branch_id, 
-       b.branch_desc, 
+       b.branch_desc,
+	   b.latitud,
+	   b.longitud,
        YEAR(a.open_date) AS year, 
        MONTH(a.open_date) AS month, 
        SUM(a.loan_amt) AS total, 
@@ -122,7 +124,9 @@ FROM dbo.tblBranchDim AS b
      INNER JOIN dbo.tblCustomerDim AS c ON a.branch_id = c.pri_branch_id
 WHERE YEAR(a.open_date) BETWEEN 2016 AND 2019
 GROUP BY b.branch_id, 
-         b.branch_desc, 
+         b.branch_desc,
+		 b.latitud,
+	     b.longitud,
          a.open_date, 
          a.loan_amt, 
          c.cust_id;
@@ -132,9 +136,11 @@ GROUP BY b.branch_id,
 SELECT YEAR(open_date) AS YEAR, 
        SUM(loan_amt) AS Total_Loan, 
        SUM(cur_bal) AS Total_current_bal, 
-       gender
+       gender,
+       2021-YEAR(birth_date) AS age
 FROM [DFNB2].[dbo].[stg_p1]
 WHERE [open_close_code] = 'O'
       AND YEAR(open_date) BETWEEN 2016 AND 2019
 GROUP BY YEAR(open_date), 
-         gender;
+         gender,
+		 birth_date;

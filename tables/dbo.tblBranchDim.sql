@@ -37,6 +37,8 @@ CREATE TABLE [dbo].[tblBranchDim](
 	[branch_id] [smallint] NOT NULL,
 	[branch_code] [varchar](5) NOT NULL,
 	[branch_desc] [varchar](100) NOT NULL,
+	[acct_branch_add_lat] [decimal] (16,12),
+	[acct_branch_add_lon] [decimal] (16,12),
 	[branch_add_id] [int] NOT NULL,
 	[region_id] [int] NOT NULL,
 	[area_id] [int] NOT NULL,
