@@ -312,14 +312,15 @@ IF OBJECT_ID('dbo.tblProductDim', 'U') IS NOT NULL
     BEGIN
         DROP TABLE dbo.tblProductDim;
 END;
-SELECT s.prod_id, 
-       CAST('Unknown' AS VARCHAR(50)) AS prod_desc,
-	   p.prod_code
---INTO dbo.tblProductDim
+SELECT DISTINCT 
+       s.prod_id, 
+       p.prod_code, 
+       p.prod_desc
+INTO dbo.tblProductDim
 FROM dbo.stg_p1 AS s
-INNER JOIN stg.PRODUCT_PROFILES AS p ON s.prod_id = p.prod_id
-               WHERE 1 = 2
-			   ORDER BY 1;
+     INNER JOIN stg.PRODUCT_PROFILES AS p ON s.prod_id = p.prod_id
+WHERE 1 = 2
+ORDER BY 1;
 
 
 -- 2.8) Customer Dimension
@@ -510,8 +511,8 @@ TRUNCATE TABLE dbo.tblProductDim;
 INSERT INTO dbo.tblProductDim
            SELECT DISTINCT 
                   s.prod_id,
-				  prod_code,
-                  prod_desc
+				  p.prod_code,
+                  p.prod_desc
            FROM dbo.stg_p1 AS s
 		         INNER JOIN 
 		         stg.PRODUCT_PROFILES as p ON s.prod_id = p.prod_id

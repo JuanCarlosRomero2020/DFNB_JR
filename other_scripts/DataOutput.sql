@@ -1,7 +1,7 @@
 
 /*****************************************************************************************************************
 NAME:    DataOutput
-PURPOSE: Data Output process for project 1 
+PURPOSE: Data Output process for project 1 and project 2
 
 MODIFICATION LOG:
 Ver      Date        Author        Description
@@ -53,20 +53,20 @@ WITH s1
                 v.pri_cust_name, 
                 v.loan_amt, 
                 RANK() OVER(
-                ORDER BY v.loan_amt DESC) AS loan_amt_rank
-         --v.tran_fee_amt_sum, 
-         --RANK() OVER(
-         --ORDER BY v.tran_fee_amt_sum DESC) AS tran_fee_amt_sum_rank
+                ORDER BY v.loan_amt DESC) AS loan_amt_rank,
+                v.tran_fee_amt_sum, 
+                RANK() OVER(
+                ORDER BY v.tran_fee_amt_sum DESC) AS tran_fee_amt_sum_rank
          FROM dbo.v_denorm_acct_cust_rel_prod_branch_region AS v)
      SELECT s1.acct_id, 
             s1.acct_since_year, 
             s1.pri_cust_id, 
             s1.pri_cust_name, 
             s1.loan_amt, 
-            s1.loan_amt_rank 
-     --s1.tran_fee_amt_sum
-     --s1.tran_fee_amt_sum_rank, 
-     --(s1.loan_amt_rank + s1.tran_fee_amt_sum_rank) AS combined_value_rank
+            s1.loan_amt_rank, 
+            s1.tran_fee_amt_sum,
+            s1.tran_fee_amt_sum_rank, 
+            (s1.loan_amt_rank + s1.tran_fee_amt_sum_rank) AS combined_value_rank
      FROM s1
      WHERE s1.acct_since_year BETWEEN 2016 AND 2019;
 
@@ -89,10 +89,10 @@ SELECT tad.acct_id,
        tbd.region_id, 
        trd.region_desc, 
        tad.loan_amt
---, SUM(tf.tran_fee_amt) as tran_fee_amt_sum
+      , SUM(tf.tran_fee_amt) as tran_fee_amt_sum
 FROM dbo.tblAccountDim AS tad 
-     --LEFT JOIN dbo.tblTransactionFact as tf
-     -- ON tad.acct_id = tf.acct_id
+     LEFT JOIN dbo.tblTransactionFact as tf
+     ON tad.acct_id = tf.acct_id
      INNER JOIN dbo.tblCustomerDim AS tcd ON tad.pri_cust_id = tcd.cust_id
      INNER JOIN dbo.tblProductDim AS tpd ON tpd.prod_id = tad.prod_id
      INNER JOIN dbo.tblBranchDim AS tbd ON tbd.branch_id = tad.branch_id

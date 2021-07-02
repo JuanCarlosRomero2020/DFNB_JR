@@ -61,10 +61,10 @@ SELECT tad.acct_id
 	 , tbd.region_id
 	 , trd.region_desc
 	 , tad.loan_amt
-	 --, SUM(tf.tran_fee_amt) as tran_fee_amt_sum
+	 , SUM(tf.tran_fee_amt) as tran_fee_amt_sum
   FROM dbo.tblAccountDim as tad 
- --LEFT JOIN dbo.tblTransactionFact as tf
-   -- ON tad.acct_id = tf.acct_id
+  LEFT JOIN dbo.tblTransactionFact as tf
+   ON tad.acct_id = tf.acct_id
  INNER JOIN dbo.tblCustomerDim as tcd
    ON tad.pri_cust_id = tcd.cust_id
  INNER JOIN dbo.tblProductDim as tpd
