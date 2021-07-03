@@ -29,8 +29,10 @@ distributed under the same license terms.
 
 -- 1) Customer Detail
 
-SELECT a.acct_id, 
+SELECT TOP 10000
+       a.acct_id, 
        a.open_close_code, 
+	   YEAR(a.open_date) AS Year_open,
        a.loan_amt, 
        b.branch_id, 
        b.branch_desc,
@@ -38,11 +40,29 @@ SELECT a.acct_id,
 	   b.longitud,
        c.cust_id, 
        c.last_name, 
-       c.cust_since_date
-FROM dbo.tblAccountDim AS a
+       YEAR(c.cust_since_date) AS customer_since,
+       SUM(tf.tran_fee_amt) as tran_fee_amt_sum,
+	   ttd.tran_type_desc,
+	   SUM(ttd.tran_fee_prct) as porcentaje
+	 FROM dbo.tblAccountDim AS a
      INNER JOIN dbo.tblBranchDim AS b ON a.branch_id = b.branch_id
-     INNER JOIN dbo.tblCustomerDim AS c ON b.branch_id = c.pri_branch_id;
-
+     INNER JOIN dbo.tblCustomerDim AS c ON b.branch_id = c.pri_branch_id
+	 INNER JOIN dbo.tblTransactionFact AS tf ON c.pri_branch_id = tf.branch_id
+	 INNER JOIN dbo.tblTransactionTypeDim AS ttd ON tf.tran_type_id = ttd.tran_type_id
+WHERE YEAR(a.open_date)  BETWEEN 2016 AND 2019 and open_close_code = 'O'
+GROUP BY a.acct_id,
+         a.open_close_code,
+		 a.open_date,
+		 a.loan_amt, 
+         b.branch_id, 
+         b.branch_desc,
+	     b.latitud,
+	     b.longitud,
+		 c.cust_id,
+		 c.last_name,
+		 c.cust_since_date,
+		 tf.tran_fee_amt,
+		 ttd.tran_type_desc;
 -- 2) Loan Rank
 
 WITH s1
@@ -89,7 +109,13 @@ SELECT tad.acct_id,
        tbd.region_id, 
        trd.region_desc, 
        tad.loan_amt
-      , SUM(tf.tran_fee_amt) as tran_fee_amt_sum
+      , SUM(tf.tran_fee_amt) as tran_fee_amt_sum,
+	   ttd.tran_type_desc,
+	   SUM(ttd.tran_fee_prct) as porcentaje,
+	   RANK() OVER(
+                ORDER BY tad.loan_amt DESC) AS loan_amt_rank,
+       RANK() OVER(
+                ORDER BY tf.tran_fee_amt DESC) AS tran_fee_amt_sum_rank
 FROM dbo.tblAccountDim AS tad 
      LEFT JOIN dbo.tblTransactionFact as tf
      ON tad.acct_id = tf.acct_id
@@ -97,6 +123,7 @@ FROM dbo.tblAccountDim AS tad
      INNER JOIN dbo.tblProductDim AS tpd ON tpd.prod_id = tad.prod_id
      INNER JOIN dbo.tblBranchDim AS tbd ON tbd.branch_id = tad.branch_id
      INNER JOIN dbo.tblRegionDim AS trd ON trd.region_id = tbd.region_id
+	 INNER JOIN dbo.tblTransactionTypeDim AS ttd ON ttd.tran_type_id = tf.tran_type_id
 WHERE YEAR(tad.open_date) BETWEEN 2016 AND 2019
 GROUP BY tad.acct_id, 
          YEAR(tad.open_date), 
@@ -114,7 +141,10 @@ GROUP BY tad.acct_id,
          tbd.branch_code + ' - ' + tbd.branch_desc, 
          tbd.region_id, 
          trd.region_desc, 
-         tad.loan_amt;
+         tad.loan_amt,
+		 ttd.tran_type_desc,
+		 ttd.tran_fee_prct,
+		 tf.tran_fee_amt;
 
 --4) Loan sum
 
@@ -138,16 +168,21 @@ GROUP BY b.branch_id,
          a.loan_amt, 
          c.cust_id;
 
---5) Total Loan vs Current Balanceby Gender
+--5) Total Loan vs Current Balanceby Gender and age
 
-SELECT YEAR(open_date) AS YEAR, 
-       SUM(loan_amt) AS Total_Loan, 
-       SUM(cur_bal) AS Total_current_bal, 
-       gender,
-       2021-YEAR(birth_date) AS age
-FROM [DFNB2].[dbo].[stg_p1]
+SELECT YEAR(p1.open_date) AS YEAR, 
+       SUM(p1.loan_amt) AS Total_Loan, 
+       SUM(p1.cur_bal) AS Total_current_bal, 
+       p1.gender,
+       2021-YEAR(p1.birth_date) AS age,
+       p2.tran_type_desc,
+       SUM(p2.tran_fee_amt) AS tran_fee_amt
+FROM [DFNB2].[dbo].[stg_p1] AS p1
+INNER JOIN [DFNB2].[dbo].[stg_p2] AS p2 ON p1.branch_id = p2.branch_id
 WHERE [open_close_code] = 'O'
       AND YEAR(open_date) BETWEEN 2016 AND 2019
 GROUP BY YEAR(open_date), 
          gender,
-		 birth_date;
+		 birth_date,
+		 tran_type_desc,
+		 tran_fee_amt;

@@ -28,7 +28,8 @@ MODIFICATION LOG:
 Ver       Date         Author       Description
 -         -
 1.0       06/15/2021   JCRomero      1. Built this script for LDS BC IT 240
-
+2.0       07/02/2021   JCRomero      1. Add transaction description column
+3.0       07/02/2021   JCRomero      1. Add transaction percentaje column
 
 RUNTIME: 
 Approx. 1 min
@@ -44,53 +45,59 @@ of the code the rights of the Free Software Definition. All derivative work can 
 distributed under the same license terms.
 
 ******************************************************************************************************************/
-SELECT tad.acct_id
-     , YEAR(tad.open_date) as acct_since_year
-     , tad.pri_cust_id
-	 , tcd.last_name + ', ' + tcd.first_name as pri_cust_name
-	 , YEAR(tcd.cust_since_date) as cust_since_year
-	 , tcd.cust_rel_id as pri_cust_rel_id
-	 , tad.prod_id
-	 , tpd.prod_code
-	 , tpd.prod_desc
-	 , tpd.prod_code + ' - ' + tpd.prod_desc as prod
-	 , tad.branch_id
-	 , tbd.branch_code
-	 , tbd.branch_desc
-	 , tbd.branch_code + ' - ' + tbd.branch_desc as branch
-	 , tbd.region_id
-	 , trd.region_desc
-	 , tad.loan_amt
-	 , SUM(tf.tran_fee_amt) as tran_fee_amt_sum
-  FROM dbo.tblAccountDim as tad 
-  LEFT JOIN dbo.tblTransactionFact as tf
-   ON tad.acct_id = tf.acct_id
- INNER JOIN dbo.tblCustomerDim as tcd
-   ON tad.pri_cust_id = tcd.cust_id
- INNER JOIN dbo.tblProductDim as tpd
-   ON tpd.prod_id = tad.prod_id
- INNER JOIN dbo.tblBranchDim as tbd
-   ON tbd.branch_id = tad.branch_id
- INNER JOIN dbo.tblRegionDim as trd
-   ON trd.region_id = tbd.region_id
-WHERE YEAR(tad.open_date) between 2016 and 2019
-GROUP BY tad.acct_id
-     , YEAR(tad.open_date)
-     , tad.pri_cust_id
-	 , tcd.last_name + ', ' + tcd.first_name
-	 , YEAR(tcd.cust_since_date)
-	 , tcd.cust_rel_id
-	 , tad.prod_id
-	 , tpd.prod_code
-	 , tpd.prod_desc
-	 , tpd.prod_code + ' - ' + tpd.prod_desc
-	 , tad.branch_id
-	 , tbd.branch_code
-	 , tbd.branch_desc
-	 , tbd.branch_code + ' - ' + tbd.branch_desc
-	 , tbd.region_id
-	 , trd.region_desc
-	 , tad.loan_amt;
+SELECT tad.acct_id, 
+       YEAR(tad.open_date) AS acct_since_year, 
+       tad.pri_cust_id, 
+       tcd.last_name + ', ' + tcd.first_name AS pri_cust_name, 
+       YEAR(tcd.cust_since_date) AS cust_since_year, 
+       tcd.cust_rel_id AS pri_cust_rel_id, 
+       tad.prod_id, 
+       tpd.prod_code, 
+       tpd.prod_desc, 
+       tpd.prod_code + ' - ' + tpd.prod_desc AS prod, 
+       tad.branch_id, 
+       tbd.branch_code, 
+       tbd.branch_desc, 
+       tbd.branch_code + ' - ' + tbd.branch_desc AS branch, 
+       tbd.region_id, 
+       trd.region_desc, 
+       tad.loan_amt
+      , SUM(tf.tran_fee_amt) as tran_fee_amt_sum,
+	   ttd.tran_type_desc,
+	   SUM(ttd.tran_fee_prct) as porcentaje,
+	   RANK() OVER(
+                ORDER BY tad.loan_amt DESC) AS loan_amt_rank,
+       RANK() OVER(
+                ORDER BY tf.tran_fee_amt DESC) AS tran_fee_amt_sum_rank
+FROM dbo.tblAccountDim AS tad 
+     LEFT JOIN dbo.tblTransactionFact as tf
+     ON tad.acct_id = tf.acct_id
+     INNER JOIN dbo.tblCustomerDim AS tcd ON tad.pri_cust_id = tcd.cust_id
+     INNER JOIN dbo.tblProductDim AS tpd ON tpd.prod_id = tad.prod_id
+     INNER JOIN dbo.tblBranchDim AS tbd ON tbd.branch_id = tad.branch_id
+     INNER JOIN dbo.tblRegionDim AS trd ON trd.region_id = tbd.region_id
+	 INNER JOIN dbo.tblTransactionTypeDim AS ttd ON ttd.tran_type_id = tf.tran_type_id
+WHERE YEAR(tad.open_date) BETWEEN 2016 AND 2019
+GROUP BY tad.acct_id, 
+         YEAR(tad.open_date), 
+         tad.pri_cust_id, 
+         tcd.last_name + ', ' + tcd.first_name, 
+         YEAR(tcd.cust_since_date), 
+         tcd.cust_rel_id, 
+         tad.prod_id, 
+         tpd.prod_code, 
+         tpd.prod_desc, 
+         tpd.prod_code + ' - ' + tpd.prod_desc, 
+         tad.branch_id, 
+         tbd.branch_code, 
+         tbd.branch_desc, 
+         tbd.branch_code + ' - ' + tbd.branch_desc, 
+         tbd.region_id, 
+         trd.region_desc, 
+         tad.loan_amt,
+		 ttd.tran_type_desc,
+		 ttd.tran_fee_prct,
+		 tf.tran_fee_amt;
 
 GO
 
