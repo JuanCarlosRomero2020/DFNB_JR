@@ -41,28 +41,35 @@ distributed under the same license terms.
 
 ******************************************************************************************************************/
 WITH s1
-     AS (SELECT distinct v.acct_id, 
+     AS (SELECT DISTINCT 
+                v.acct_id, 
                 v.acct_since_year, 
                 v.pri_cust_id, 
                 v.pri_cust_name, 
                 v.loan_amt, 
+				v.tran_type_desc,
+                v.branch_desc,
+                v.tran_id,
                 RANK() OVER(
                 ORDER BY v.loan_amt DESC) AS loan_amt_rank,
                 v.tran_fee_amt_sum, 
                 RANK() OVER(
                 ORDER BY v.tran_fee_amt_sum DESC) AS tran_fee_amt_sum_rank
-         FROM v_denorm_acct_cust_rel_prod_branch_region as v)
+         FROM dbo.v_denorm_acct_cust_rel_prod_branch_region AS v)
      SELECT s1.acct_id, 
             s1.acct_since_year, 
             s1.pri_cust_id, 
             s1.pri_cust_name, 
+			s1.tran_type_desc,
+            s1.branch_desc,
+            s1.tran_id,
             s1.loan_amt, 
-            s1.loan_amt_rank ,
+            s1.loan_amt_rank, 
             s1.tran_fee_amt_sum,
             s1.tran_fee_amt_sum_rank, 
-           (s1.loan_amt_rank + s1.tran_fee_amt_sum_rank) AS combined_value_rank
+            (s1.loan_amt_rank + s1.tran_fee_amt_sum_rank) AS combined_value_rank
      FROM s1
-	 WHERE s1.acct_since_year BETWEEN 2016 AND 2019;
+     WHERE s1.acct_since_year BETWEEN 2016 AND 2019;
 GO
 
 

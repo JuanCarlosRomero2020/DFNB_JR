@@ -51,6 +51,8 @@ SELECT tad.acct_id,
        tcd.last_name + ', ' + tcd.first_name AS pri_cust_name, 
        YEAR(tcd.cust_since_date) AS cust_since_year, 
        tcd.cust_rel_id AS pri_cust_rel_id, 
+	   tcd.gender,
+	   2021-YEAR(tcd.birth_date) AS age, 
        tad.prod_id, 
        tpd.prod_code, 
        tpd.prod_desc, 
@@ -61,8 +63,11 @@ SELECT tad.acct_id,
        tbd.branch_code + ' - ' + tbd.branch_desc AS branch, 
        tbd.region_id, 
        trd.region_desc, 
-       tad.loan_amt
-      , SUM(tf.tran_fee_amt) as tran_fee_amt_sum,
+       tad.loan_amt,
+       tf.tran_id,
+       tf.tran_amt,
+       MONTH(tf.tran_date) as month,
+       SUM(tf.tran_fee_amt) as tran_fee_amt_sum,
 	   ttd.tran_type_desc,
 	   SUM(ttd.tran_fee_prct) as porcentaje,
 	   RANK() OVER(
@@ -97,7 +102,12 @@ GROUP BY tad.acct_id,
          tad.loan_amt,
 		 ttd.tran_type_desc,
 		 ttd.tran_fee_prct,
-		 tf.tran_fee_amt;
+		 tf.tran_fee_amt,
+		 tcd.gender,
+		 tcd.birth_date,
+		 tf.tran_id,
+         tf.tran_date,
+		 tf.tran_amt;
 
 GO
 

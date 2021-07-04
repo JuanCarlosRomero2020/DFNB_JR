@@ -29,8 +29,7 @@ distributed under the same license terms.
 
 -- 1) Customer Detail
 
-SELECT TOP 10000
-       a.acct_id, 
+SELECT a.acct_id, 
        a.open_close_code, 
 	   YEAR(a.open_date) AS Year_open,
        a.loan_amt, 
@@ -63,7 +62,7 @@ GROUP BY a.acct_id,
 		 c.cust_since_date,
 		 tf.tran_fee_amt,
 		 ttd.tran_type_desc;
--- 2) Loan Rank
+-- 2) Loan and Tran fee Rank
 
 WITH s1
      AS (SELECT DISTINCT 
@@ -72,6 +71,9 @@ WITH s1
                 v.pri_cust_id, 
                 v.pri_cust_name, 
                 v.loan_amt, 
+				v.tran_type_desc,
+                v.branch_desc,
+                v.tran_id,
                 RANK() OVER(
                 ORDER BY v.loan_amt DESC) AS loan_amt_rank,
                 v.tran_fee_amt_sum, 
@@ -82,6 +84,9 @@ WITH s1
             s1.acct_since_year, 
             s1.pri_cust_id, 
             s1.pri_cust_name, 
+			s1.tran_type_desc,
+            s1.branch_desc,
+            s1.tran_id,
             s1.loan_amt, 
             s1.loan_amt_rank, 
             s1.tran_fee_amt_sum,
@@ -98,6 +103,8 @@ SELECT tad.acct_id,
        tcd.last_name + ', ' + tcd.first_name AS pri_cust_name, 
        YEAR(tcd.cust_since_date) AS cust_since_year, 
        tcd.cust_rel_id AS pri_cust_rel_id, 
+	   tcd.gender,
+	   2021-YEAR(tcd.birth_date) AS age, 
        tad.prod_id, 
        tpd.prod_code, 
        tpd.prod_desc, 
@@ -108,8 +115,10 @@ SELECT tad.acct_id,
        tbd.branch_code + ' - ' + tbd.branch_desc AS branch, 
        tbd.region_id, 
        trd.region_desc, 
-       tad.loan_amt
-      , SUM(tf.tran_fee_amt) as tran_fee_amt_sum,
+       tad.loan_amt,
+       tf.tran_id,
+       MONTH(tf.tran_date) as month,
+       SUM(tf.tran_fee_amt) as tran_fee_amt_sum,
 	   ttd.tran_type_desc,
 	   SUM(ttd.tran_fee_prct) as porcentaje,
 	   RANK() OVER(
@@ -144,7 +153,11 @@ GROUP BY tad.acct_id,
          tad.loan_amt,
 		 ttd.tran_type_desc,
 		 ttd.tran_fee_prct,
-		 tf.tran_fee_amt;
+		 tf.tran_fee_amt,
+		 tcd.gender,
+		 tcd.birth_date,
+		 tf.tran_id,
+         tf.tran_date;
 
 --4) Loan sum
 
@@ -170,7 +183,8 @@ GROUP BY b.branch_id,
 
 --5) Total Loan vs Current Balanceby Gender and age
 
-SELECT YEAR(p1.open_date) AS YEAR, 
+SELECT 
+       YEAR(p1.open_date) AS YEAR, 
        SUM(p1.loan_amt) AS Total_Loan, 
        SUM(p1.cur_bal) AS Total_current_bal, 
        p1.gender,
