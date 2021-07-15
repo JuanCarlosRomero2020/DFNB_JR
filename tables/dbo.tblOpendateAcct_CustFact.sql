@@ -8,6 +8,7 @@ MODIFICATION LOG:
 Ver       Date         Author       Description
 -------   ----------   ----------   -----------------------------------------------------------------------------
 1.0       7/9/2021  JCRomero      1. Built this script for LDS BC IT 240 P3
+1.0       7/15/2021  JCRomero      1. Enhace table for project 3. Adding gender and age to customer. 
 RUNTIME: 
 1 sec
 NOTES: 
@@ -18,11 +19,10 @@ of the code the rights of the Free Software Definition. All derivative work can 
 distributed under the same license terms.
 ******************************************************************************************************************/
 
-
 USE [DFNB2]
 GO
 
-/****** Object:  Table [dbo].[tblOpendateAcct_CustFact]    Script Date: 7/9/2021 1:10:30 PM ******/
+/****** Object:  Table [dbo].[tblOpendateAcct_CustFact]    Script Date: 7/15/2021 10:56:38 AM ******/
 SET ANSI_NULLS ON
 GO
 
@@ -37,10 +37,12 @@ CREATE TABLE [dbo].[tblOpendateAcct_CustFact](
 	[STATUS] [varchar](1) NOT NULL,
 	[prod_desc] [varchar](50) NOT NULL,
 	[cust_id] [smallint] NOT NULL,
+	[Age] [int] NULL,
+	[gender] [varchar](1) NOT NULL,
 	[Total_customers] [int] NULL,
 	[Name] [varchar](201) NOT NULL,
-	[Total_Anual_Revenue] [numeric](38, 6) NULL,
-	[Total_Monthly_revenue] [numeric](38, 6) NULL
+	[Total_Anual_Profit] [numeric](38, 6) NULL,
+	[Total_Monthly_profit] [numeric](38, 6) NULL
 ) ON [PRIMARY]
 GO
 

@@ -128,6 +128,8 @@ SELECT a.prod_id,
        a.[open_close_code] AS STATUS, 
        b.[prod_desc], 
        c.[cust_id], 
+       2021 - YEAR(c.[birth_date]) AS Age, 
+       c.[gender], 
        COUNT(c.[cust_id]) AS Total_customers, 
        CONCAT(c.[first_name], ' ', c.[last_name]) AS Name, 
        SUM(a.loan_amt) * 0.05 AS Total_Anual_Revenue, 
@@ -143,23 +145,29 @@ GROUP BY a.prod_id,
          c.[cust_id], 
          c.[first_name], 
          c.[last_name], 
-         a.[loan_amt]
+         a.[loan_amt], 
+         c.birth_date, 
+         c.[gender]
 ORDER BY open_date ASC;
+
 IF OBJECT_ID('dbo.tblOpendateAcct_CustFact', 'U') IS NOT NULL
     BEGIN
-        DROP TABLE dbo.tblOpendateAcct_CustFact;
+        DROP TABLE dbo.tblOpendateAcct_CustFact
 END;
+
 SELECT a.prod_id, 
        YEAR(a.open_date) AS open_year, 
        MONTH(a.open_date) AS open_month, 
        SUM(a.loan_amt) AS total_loan_amount, 
        a.[open_close_code] AS STATUS, 
        b.[prod_desc], 
-       c.[cust_id], 
+       c.[cust_id],
+	   2021 - YEAR(c.[birth_date]) AS Age, 
+       c.[gender], 
        COUNT(c.[cust_id]) AS Total_customers, 
        CONCAT(c.[first_name], ' ', c.[last_name]) AS Name, 
-       SUM(a.loan_amt) * 0.05 AS Total_Anual_Revenue, 
-       SUM(a.loan_amt) * 0.05 / 12 AS Total_Monthly_revenue
+       SUM(a.loan_amt) * 0.05 AS Total_Anual_Profit, 
+       SUM(a.loan_amt) * 0.05 / 12 AS Total_Monthly_profit
 INTO dbo.tblOpendateAcct_CustFact
 FROM [dbo].[tblAccountDim] AS a
      INNER JOIN dbo.tblCustomerDim AS c ON a.pri_cust_id = c.cust_id
@@ -172,7 +180,9 @@ GROUP BY a.prod_id,
          c.[cust_id], 
          c.[first_name], 
          c.[last_name], 
-         a.[loan_amt]
+         a.[loan_amt],
+		 c.birth_date, 
+         c.[gender]
 ORDER BY open_date ASC;
 
 --ALTER TABLE dbo.tblTransactionFact ADD tran_id INT IDENTITY;
@@ -243,6 +253,8 @@ INSERT INTO dbo.tblOpendateAcct_CustFact
               a.[open_close_code] AS STATUS, 
               b.[prod_desc], 
               c.[cust_id], 
+              2021 - YEAR(c.[birth_date]) AS Age, 
+              c.[gender], 
               COUNT(c.[cust_id]) AS Total_customers, 
               CONCAT(c.[first_name], ' ', c.[last_name]) AS Name, 
               SUM(a.loan_amt) * 0.05 AS Total_Anual_Revenue, 
@@ -257,13 +269,14 @@ INSERT INTO dbo.tblOpendateAcct_CustFact
                 c.[cust_id], 
                 c.[first_name], 
                 c.[last_name], 
-                a.[loan_amt]
+                a.[loan_amt], 
+                c.birth_date, 
+                c.[gender]
        ORDER BY open_date ASC;
 
 -- 3.3) Load Anual Revenue Table
 
 TRUNCATE TABLE dbo.tblLoanRevenueGoalsFact;
-
 INSERT INTO dbo.tblLoanRevenueGoalsFact
        SELECT OAB.[open_year], 
               OAB.[branch_desc], 
